@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+
+<body>
+
+    <div class="topnav">
+        <span class="hello-msg">Hello, {{ request.user }}</span>
+        <span><a class="hello-msg" href="{% url 'logout' %}">Logout</a> </span>
+        <span><a class="hello">Profile</a></span>
+    </div>
+    {%  for message in messages %}
+        <p>{{  message }}</p>
+    {% endfor %}
+
+    <div class="card"><br/>
+        <div id="img_form">
+            <form method="POST" id="image_upload" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+            <input type="submit" value="upload"/>
+            </form>
+        </div>
+        {% if request.user.userprofile.profile_pic.url %}
+            <img  id="img_id" src="{{ request.user.userprofile.profile_pic.url }}">
+            <button type="submit" class="btn-btn-primary" onclick="add_pic()">Add/Edit Image</button> &nbsp; &nbsp; &nbsp; &nbsp;
+            <button type="submit" class="btn-btn-primary" onclick="delete_pic({{ request.user.userprofile.id }})">Delete Image</button> &nbsp; &nbsp; &nbsp; &nbsp;
+        {% else %}
+            <img   src="{% static 'images/Download.png' %}"/>
+            <button type="submit" class="btn-btn-primary" onclick="add_pic()">Add/Edit Image</button> &nbsp; &nbsp; &nbsp; &nbsp;
+        {% endif %}
+
+        <h1 class="title">Name: {{ request.user.username }}</h1>
+        <p class="title">Email: {{ request.user.email }}</p>
+
+        <script>
+        window.onload = function(){
+            document.getElementById("img_form").style.display = 'none';
+        };
+
+        function add_pic(){
+            document.getElementById("img_form").style.display = 'block';
+        }
+
+        function delete_pic(id){
+            var action = confirm("Are you sure!! you want to Delete this Picture?");
+            if(action != false){
+                $.ajax({
+                    url: '{% url 'DeletePic' %}',
+                    data:{
+                        'id':id,
+                    },
+                    dataType:'json',
+                    success:function(data){
+                    if(data.deleted){
+                        document.getElementById("img_id").style.display = "none";
+                                         }
+                    }
+                });
+            }
+        }
+    </script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>-->
+
+
+<body>
+
+    <div class="topnav">
+        <span class="hello-msg">Hello, {{ request.user }}</span>
+        <span><a class="hello-msg" href="{% url 'logout' %}">Logout</a> </span>
+        <span><a class="hello">Profile</a></span>
+    </div>
+    {%  for message in messages %}
+        <p>{{  message }}</p>
+    {% endfor %}
+
+
+    <p>List of Users and details:</p>
+        <table style="width:80%" id="listData">
+            <tr>
+                <th>Profile Photo</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Date of Registration</th>
+                <th>Want to Approve/Disapprove</th>
+                <th>Want to Delete</th>
+            </tr>
+            {% for user in users %}
+            <tr id="user-{{ user.id }}">
+                <td> <img src="{{ user.userprofile.profile_pic.url }}"/></td>
+                <td>{{ user.username }} </td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.date_joined }} </td>
+                {% if user.is_active %}
+                    <td><input type="submit" id="approve_user" onclick="disapproveUsers({{ user.id }})" value="Disapprove"/></td>
+                {% else %}
+                    <td><input type="submit" id="dapprove_user" onclick="approveUsers({{ user.id }})" value="Approve"/></td>
+                {% endif %}
+                <td><input type="submit" id="delete_user" onclick="deleteUsers({{ user.id }})" value="Delete"/></td>
+            </tr>
+            {% endfor %}
+    </table>
+
+
+    <script>
+        function approveUsers(id){
+            var action = confirm("Are you sure!! you want to Approve this user?");
+            if(action != false){
+                $.ajax({
+                    url: '{% url 'approve' %}',
+                    data:{
+                        'id':id,
+                    },
+                    dataType:'json',
+                    success:function(data){
+                    if(data.approved){
+                        document.getElementById("dapprove_user").value = "Disapprove"
+                    }
+                    }
+                });
+            }
+        }
+    </script>
+
+    <script>
+        function disapproveUsers(id){
+            var action = confirm("Are you sure!! you want to Disapprove this user?");
+            if(action != false){
+                $.ajax({
+                    url: '{% url 'disapprove' %}',
+                    data:{
+                        'id':id,
+                    },
+                    dataType:'json',
+                    success:function(data){
+                    if(data.disapproved){
+                        document.getElementById("approve_user").value = "Approve"
+                    }
+                    }
+                });
+            }
+        }
+    </script>
+
+    <script>
+        function deleteUsers(id){
+            var action = confirm("Are you sure!! you want to delete the user?");
+            if(action != false){
+                $.ajax({
+                    url: '{% url 'delete' %}',
+                    data:{
+                        'id':id,
+                    },
+                    dataType:'json',
+                    success:function(data){
+                    if(data.deleted){
+                        let uid = "u_id" + id;
+                        $("#listData #user-" + id).remove();
+
+                    }
+                    }
+                });
+            }
+        }
+    </script>
+
+    <style>
+        table, th, td{
+            border:1px solid black;
+            border-collapse: collapse;
+            text-color: black;
+        }
+        th, td{
+            padding: 5px;
+        }
+    </style>
+</body>
+</html>
